@@ -30,6 +30,8 @@ void TC0_Handler(void) {
 	trig_pulse(TRIG_PIO, TRIG_PIO_IDX_MASK);
 	/** Muda o estado do LED (pisca) **/
 	pin_toggle(LED_PIO, LED_PIO_IDX_MASK);
+	delay_us(280);
+	RTT_init(RTT_FREQ, rtt_alarm, RTT_MR_ALMIEN);
 }
 
 void RTT_Handler(void) {
@@ -61,7 +63,7 @@ void echo_callback(void) {
 	} 
 	
 	else if (pio_get(ECHO_PIO, PIO_INPUT, ECHO_PIO_IDX_MASK)) {
-		RTT_init(RTT_FREQ, rtt_alarm, RTT_MR_ALMIEN);
+		
 	}
 }
 
@@ -111,7 +113,7 @@ int main (void)
 			distance = (double) SPEED*seconds*100;
 			
 			if (distance <= 400 && distance >= 2){
-				gfx_mono_draw_string("          ", 0, 0, &sysfont);
+				gfx_mono_draw_string("             ", 0, 0, &sysfont);
 				sprintf(str, "%.2lf cm", distance);
 				gfx_mono_draw_string(str, 0, 0, &sysfont);
 				
@@ -119,18 +121,20 @@ int main (void)
 			}
 			
 			if (distance > 400 || distance < 2){
-				timeout = 5;
+				timeout++;
 			}
 			
 			fall_flag = 0;
 		}
+		pmc_sleep(SAM_PM_SMODE_SLEEP_WFI);
 	  
 		if (timeout >= 5) {
-			gfx_mono_draw_string("          ", 0, 0, &sysfont);
-			gfx_mono_draw_string("ERROR! Check connections!", 0, 0, &sysfont);
+			gfx_mono_draw_string("             ", 0, 0, &sysfont);
+			sprintf(str, "ERROR");
+			gfx_mono_draw_string(str, 0,0, &sysfont);
 		}
 	  
-	pmc_sleep(SAM_PM_SMODE_SLEEP_WFI);
+	
 	}
 	
 }
