@@ -33,6 +33,7 @@ static lv_obj_t * labelBtnClk;
 static lv_obj_t * labelBtnUp;
 static lv_obj_t * labelBtnDown;
 lv_obj_t * labelFloor;
+lv_obj_t * labelFloorDecimal;
 lv_obj_t * labelSetValue;
 lv_obj_t * labelClock;
 
@@ -281,6 +282,13 @@ void lv_termostato(void) {
 	lv_obj_set_style_text_color(labelFloor, lv_color_white(), LV_STATE_DEFAULT);
 	lv_label_set_text_fmt(labelFloor, "%02d", 23);
 	
+	// label Floor Decimal
+	labelFloorDecimal = lv_label_create(lv_scr_act());
+	lv_obj_set_style_text_font(labelFloorDecimal, &dseg40, LV_STATE_DEFAULT);
+	lv_obj_set_style_text_color(labelFloorDecimal, lv_color_white(), LV_STATE_DEFAULT);
+	lv_label_set_text_fmt(labelFloorDecimal, ". %01d", 4);
+	lv_obj_align_to(labelFloorDecimal, labelFloor, LV_ALIGN_OUT_RIGHT_MID, 5, 15);
+	
 	// label Clock
 	labelClock = lv_label_create(lv_scr_act());
 	lv_obj_align(labelClock, LV_ALIGN_TOP_RIGHT, -10 , 10);
@@ -290,7 +298,6 @@ void lv_termostato(void) {
 
 	// label Set Value
 	labelSetValue = lv_label_create(lv_scr_act());
-	//lv_obj_align(labelSetValue, LV_ALIGN_LEFT_MID, 35 , -45);
 	lv_obj_set_style_text_font(labelSetValue, &dseg40, LV_STATE_DEFAULT);
 	lv_obj_set_style_text_color(labelSetValue, lv_color_white(), LV_STATE_DEFAULT);
 	lv_label_set_text_fmt(labelSetValue, "%02d", 22);
