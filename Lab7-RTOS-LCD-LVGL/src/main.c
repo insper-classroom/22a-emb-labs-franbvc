@@ -56,6 +56,9 @@ extern void xPortSysTickHandler(void);
 
 SemaphoreHandle_t xSemaphoreClock;
 
+// global up and down mode
+volatile int set_clock = 0;
+
 extern void vApplicationStackOverflowHook(xTaskHandle *pxTask, signed char *pcTaskName) {
 	printf("stack overflow %x %s\r\n", pxTask, (portCHAR *)pcTaskName);
 	for (;;) {	}
@@ -156,10 +159,7 @@ static void clk_handler(lv_event_t * e) {
 	lv_event_code_t code = lv_event_get_code(e);
 
 	if(code == LV_EVENT_CLICKED) {
-		LV_LOG_USER("Clicked");
-	}
-	else if(code == LV_EVENT_VALUE_CHANGED) {
-		LV_LOG_USER("Toggled");
+		set_clock = !set_clock;
 	}
 }
 
@@ -168,9 +168,15 @@ static void up_handler(lv_event_t * e) {
 	char *c;
 	int temp;
 	if(code == LV_EVENT_CLICKED) {
-		c = lv_label_get_text(labelSetValue);
-		temp = atoi(c);
-		lv_label_set_text_fmt(labelSetValue, "%02d", temp + 1);
+		if (set_clock == 0) {
+			c = lv_label_get_text(labelSetValue);
+			temp = atoi(c);
+			lv_label_set_text_fmt(labelSetValue, "%02d", temp + 1);
+		} else {
+			uint32_t current_hour, current_min, current_sec;
+			rtc_get_time(RTC, &current_hour, &current_min, &current_sec);
+			rtc_set_time(RTC, current_hour, current_min+1, current_sec);
+		}
 	}
 }
 
@@ -179,9 +185,15 @@ static void down_handler(lv_event_t * e) {
 	char *c;
 	int temp;
 	if(code == LV_EVENT_CLICKED) {
-		c = lv_label_get_text(labelSetValue);
-		temp = atoi(c);
-		lv_label_set_text_fmt(labelSetValue, "%02d", temp - 1);
+		if (set_clock == 0) {
+			c = lv_label_get_text(labelSetValue);
+			temp = atoi(c);
+			lv_label_set_text_fmt(labelSetValue, "%02d", temp - 1);
+		} else {
+			uint32_t current_hour, current_min, current_sec;
+			rtc_get_time(RTC, &current_hour, &current_min, &current_sec);
+			rtc_set_time(RTC, current_hour, current_min-1, current_sec);
+		}
 	}
 }
 
