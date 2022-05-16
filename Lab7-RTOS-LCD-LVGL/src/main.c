@@ -11,6 +11,10 @@ LV_FONT_DECLARE(dseg70);
 LV_FONT_DECLARE(dseg40);
 LV_FONT_DECLARE(dseg24);
 
+#define AFEC_POT AFEC1
+#define AFEC_POT_ID ID_AFEC1
+#define AFEC_POT_CHANNEL 6 // Canal do pino PC31
+
 /************************************************************************/
 /* LCD / LVGL                                                           */
 /************************************************************************/
@@ -333,11 +337,12 @@ static void task_lcd(void *pvParameters) {
 			is_sleeping = 1;
 		}
 		
-		if (is_sleeping != 1) {
-			lv_tick_inc(50);
-			lv_task_handler();
-		}
+		if (is_sleeping == 1) {
+			lv_obj_clean(lv_scr_act());	
+		} 
 		
+		lv_tick_inc(50);
+		lv_task_handler();
 		vTaskDelay(50);
 	}
 }
