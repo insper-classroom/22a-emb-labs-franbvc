@@ -331,7 +331,6 @@ static void task_lcd(void *pvParameters) {
 	for (;;)  {
 		if (xSemaphoreTake(xSemaphoreSleep, 1000)) {
 			is_sleeping = 1;
-			lv_task_handler();
 		}
 		
 		if (is_sleeping != 1) {
