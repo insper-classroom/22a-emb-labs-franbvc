@@ -55,6 +55,7 @@ extern void vApplicationMallocFailedHook(void);
 extern void xPortSysTickHandler(void);
 
 SemaphoreHandle_t xSemaphoreClock;
+SemaphoreHandle_t xSemaphoreSleep;
 
 // global up and down mode
 volatile int set_clock = 0;
@@ -137,10 +138,8 @@ static void event_handler(lv_event_t * e) {
 	lv_event_code_t code = lv_event_get_code(e);
 
 	if(code == LV_EVENT_CLICKED) {
-		LV_LOG_USER("Clicked");
-	}
-	else if(code == LV_EVENT_VALUE_CHANGED) {
-		LV_LOG_USER("Toggled");
+		BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+		xSemaphoreGiveFromISR(xSemaphoreSleep, &xHigherPriorityTaskWoken);
 	}
 }
 
@@ -327,10 +326,19 @@ static void task_lcd(void *pvParameters) {
 
 	//lv_ex_btn_1();
 	lv_termostato();
+	int is_sleeping = 0;
 
 	for (;;)  {
-		lv_tick_inc(50);
-		lv_task_handler();
+		if (xSemaphoreTake(xSemaphoreSleep, 1000)) {
+			is_sleeping = 1;
+			lv_task_handler();
+		}
+		
+		if (is_sleeping != 1) {
+			lv_tick_inc(50);
+			lv_task_handler();
+		}
+		
 		vTaskDelay(50);
 	}
 }
@@ -344,7 +352,7 @@ static void task_clock(void *pvParameters) {
 	for (;;)  {
 		if (xSemaphoreTake(xSemaphoreClock, 1000)) {
 			rtc_get_time(RTC, &current_hour, &current_min, &current_sec);
-			lv_label_set_text_fmt(labelClock, "%02d:%02d", current_hour, current_min);
+			lv_label_set_text_fmt(labelClock, "%02d:%02d:%02d", current_hour, current_min, current_sec);
 		}
 		
 		vTaskDelay(50);
@@ -445,6 +453,11 @@ int main(void) {
 	xSemaphoreClock = xSemaphoreCreateBinary();
 	if (xSemaphoreClock == NULL) { 
 		printf("falha em criar o semaforo clock \n");
+	}
+	
+	xSemaphoreSleep = xSemaphoreCreateBinary();
+	if (xSemaphoreSleep == NULL) {
+		printf("falha em criar o semaforo sleep \n");
 	}
 
 	/* Create task to control oled */
